@@ -18,7 +18,12 @@ FUNC2 = {'+' : np.add,
          '/' : np.divide,
          '**' : np.power,
          '^' : np.power,
-         'atan2' : np.arctan2}
+         'pow' : np.power,
+         'atan2' : np.arctan2,
+         'max' : np.maximum,
+         'fmax' : np.fmax,
+         'min' : np.minimum,
+         'fmin': np.fmin}
 FUNC1 = {'+' : positive,
          '-' : np.negative,
          'sin' : np.sin,
