@@ -96,7 +96,7 @@ Returns
     else:
         result = stack.pop()
 
-    return fits.ImageHDU(result)
+    return fits.PrimaryHDU(result)
 
 
 def main(argv):
