@@ -1,12 +1,16 @@
 '''imcalc - image calculator in rpn'''
 
 import sys
-from optparse import OptionParser
+#from optparse import OptionParser  # optparse is deprecated - what's new?
 import numpy as np
 from astropy.io import fits
 
-def positive(x):
-    return(x)
+def positive(number):
+    '''Return number
+
+    This is an analogue to np.negative to cater for expression '%1 +'.
+    '''
+    return number
 
 FUNC2 = {'+' : np.add,
          '-' : np.subtract,
@@ -29,11 +33,23 @@ FUNC1 = {'+' : positive,
 
 
 
-if __name__ == "__main__":
+def imcalc(command, filenames):
+    '''Function to perform image calculations
 
+Parameters
+----------
+    command [str]:
+        Command to perform. FITS file names are referenced by '%1', '%2', etc.
+    filenames [list]:
+        list of names of FITS files
+
+Returns
+-------
+   A FITS HDU.
+
+'''
     # parse command line options
-    tokenlist = sys.argv[1].split()
-    filenames = sys.argv[2:]
+    tokenlist = command.split()
 
     print("Command: ", tokenlist, file=sys.stderr)
     print("Files: ", filenames, file=sys.stderr)
@@ -79,4 +95,18 @@ if __name__ == "__main__":
         print("Stack has improper length: ", stack, file=sys.stderr)
     else:
         result = stack.pop()
-        fits.writeto(sys.stdout, result)
+
+    return fits.ImageHDU(result)
+
+
+def main(argv):
+    '''Analyse command line options'''
+    commandstr = argv[1]
+    filelist = argv[2:]
+
+    outhdu = imcalc(commandstr, filelist)
+    outhdu.writeto(sys.stdout)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
