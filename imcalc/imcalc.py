@@ -103,7 +103,10 @@ Returns
     else:
         result = stack.pop()
 
-    return fits.PrimaryHDU(result)
+    header = fits.getheader(filenames[0])
+    header.add_history("imcalc '" + command + "'")
+
+    return fits.PrimaryHDU(result, header)
 
 
 def imcreate(command, naxes):
@@ -158,8 +161,9 @@ def imcreate(command, naxes):
         result = stack.pop()
 
     header = fits.Header()
-    header.add_history(command)
-    return fits.PrimaryHDU(result)
+    header.add_history("imcalc '" + command + "'")
+
+    return fits.PrimaryHDU(result, header)
 
 
 def main(* argv):
