@@ -157,6 +157,8 @@ def imcreate(command, naxes):
     else:
         result = stack.pop()
 
+    header = fits.Header()
+    header.add_history(command)
     return fits.PrimaryHDU(result)
 
 
