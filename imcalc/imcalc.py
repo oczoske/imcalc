@@ -2,6 +2,8 @@
 
 import sys
 #from optparse import OptionParser  # optparse is deprecated - what's new?
+import argparse
+
 import numpy as np
 from astropy.io import fits
 
@@ -104,12 +106,78 @@ Returns
     return fits.PrimaryHDU(result)
 
 
-def main(argv):
-    '''Analyse command line options'''
-    commandstr = argv[1]
-    filelist = argv[2:]
+def imcreate(command, naxes):
+    '''Create an image of size naxes[0] x naxes[1]'''
 
-    outhdu = imcalc(commandstr, filelist)
+    # parse command line options
+    tokenlist = command.split()
+
+    print("Command: ", tokenlist, file=sys.stderr)
+
+    if 'x' in tokenlist:
+        xarr = np.mgrid[0:naxes[0], 0:naxes[1]][1] + 1.
+
+    if 'y' in tokenlist:
+        yarr = np.mgrid[0:naxes[0], 0:naxes[1]][0] + 1.
+
+
+    stack = list()
+
+    for token in tokenlist:
+        if token == 'x':
+            stack.append(xarr)
+        elif token == 'y':
+            stack.append(yarr)
+        elif token in ['+', '-']:   # can be unary or binary
+            right = stack.pop()
+            try:
+                left = stack.pop()
+                result = FUNC2[token](left, right)
+            except IndexError:
+                result = FUNC1[token](right)
+            stack.append(result)
+        elif token in FUNC1.keys():  # unary operators
+            right = stack.pop()
+            result = FUNC1[token](right)
+            stack.append(result)
+        elif token in FUNC2.keys():   # binary operators
+            right = stack.pop()
+            left = stack.pop()
+            result = FUNC2[token](left, right)
+            stack.append(result)
+        else:
+            try:    # test if numerical value
+                token = float(token)
+                stack.append(token)
+            except ValueError:   # unknown
+                sys.exit("Undefined operation " + token)
+
+    if len(stack) != 1:
+        print("Stack has improper length: ", stack, file=sys.stderr)
+    else:
+        result = stack.pop()
+
+    return fits.PrimaryHDU(result)
+
+
+def main(* argv):
+    '''Analyse command line options'''
+    parser = argparse.ArgumentParser(
+        description='FITS image calculator',
+        epilog='Command string has to be reverse polish')
+    parser.add_argument('-c', nargs=2, dest='naxes', type=int)
+    parser.add_argument('commandstr', metavar='command', type=str,
+                        help='command string')
+    parser.add_argument('filelist', type=str, nargs='*',
+                        help='FITS file names')
+    args = parser.parse_args()
+
+    if args.naxes is None:
+        outhdu = imcalc(args.commandstr,
+                        args.filelist)
+    else:
+        outhdu = imcreate(args.commandstr, args.naxes)
+
     outhdu.writeto(sys.stdout)
 
 
