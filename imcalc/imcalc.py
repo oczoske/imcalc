@@ -55,7 +55,7 @@ FUNC0 = {'rand' : np.random.rand,
          'randn' : np.random.randn}
 
 
-def imcalc(command, filenames):
+def imcalc(command, filenames, bitpix=None):
     '''Function to perform image calculations
 
 Parameters
@@ -64,6 +64,8 @@ Parameters
         Command to perform. FITS file names are referenced by '%1', '%2', etc.
     filenames [list]:
         list of names of FITS files
+    bitpix [str or dtype]:
+        bitpix of the result
 
 Returns
 -------
@@ -146,11 +148,30 @@ Returns
     header = fits.getheader(filenames[0])
     header.add_history("imcalc '" + command + "'")
 
+    if bitpix is not None:
+        print("bitpix: ", bitpix)
+        result = result.astype(bitpix)
+
     return fits.PrimaryHDU(result, header)
 
 
-def imcreate(command, naxes):
-    '''Create an image of size naxes[0] x naxes[1]'''
+def imcreate(command, naxes, bitpix=None):
+    '''Create an image of size naxes[0] x naxes[1]
+
+Parameters
+----------
+    command [str]:
+        Command to perform. FITS file names are referenced by '%1', '%2', etc.
+    naxes [tuple or array]:
+        y and x size of output image
+    bitpix [str or dtype]:
+        bitpix of the result
+
+Returns
+-------
+   A FITS HDU.
+
+'''
 
     # parse command line options
     tokenlist = command.split()
@@ -212,26 +233,55 @@ def imcreate(command, naxes):
     header = fits.Header()
     header.add_history("imcalc '" + command + "'")
 
+    if bitpix is not None:
+        try:
+            result = result.astype(bitpix)
+        except TypeError:
+            print("is np.int16: ", bitpix is np.int16, file=sys.stderr)
+            print("Old type: ", result.dtype, file=sys.stderr)
+            print("bitpix: ", bitpix, file=sys.stderr)
+
     return fits.PrimaryHDU(result, header)
 
 
 def main(* argv):
     '''Analyse command line options'''
+
+    bitpixmap = {'8' : np.uint8,
+                 '16' : np.int16,
+                 '32' : np.int32,
+                 '-32' : np.float32,
+                 '-64' : np.float64}
+
+    def convertvalues(value):
+        '''get the value from the bitpixmap dictionary'''
+        return bitpixmap.get(value)
+
     parser = argparse.ArgumentParser(
         description='FITS image calculator',
         epilog='Command string has to be reverse polish')
+
+    # -c : create image, arguments are image size
     parser.add_argument('-c', nargs=2, dest='naxes', type=int)
+
+    # -p : bitpix for output file
+    parser.add_argument('-p', dest='bitpix', type=convertvalues)
+
+    # commandstr : command string
     parser.add_argument('commandstr', metavar='command', type=str,
                         help='command string')
+
+    # filelist : FITS files referenced in commandstr
     parser.add_argument('filelist', type=str, nargs='*',
                         help='FITS file names')
+
     args = parser.parse_args()
 
     if args.naxes is None:
         outhdu = imcalc(args.commandstr,
-                        args.filelist)
+                        args.filelist, args.bitpix)
     else:
-        outhdu = imcreate(args.commandstr, args.naxes)
+        outhdu = imcreate(args.commandstr, args.naxes, args.bitpix)
 
     outhdu.writeto(sys.stdout)
 
