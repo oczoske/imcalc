@@ -14,6 +14,13 @@ def positive(number):
     '''
     return number
 
+
+def ifelse(logic, truearr, falsearr):
+    '''Fill array with values from truearr or falsearr, according to logic'''
+
+    return logic * truearr + (1. - logic) * falsearr
+
+
 FUNC2 = {'+' : np.add,
          '-' : np.subtract,
          '*' : np.multiply,
@@ -25,7 +32,13 @@ FUNC2 = {'+' : np.add,
          'max' : np.maximum,
          'fmax' : np.fmax,
          'min' : np.minimum,
-         'fmin': np.fmin}
+         'fmin': np.fmin,
+         '>' : np.greater,
+         '<' : np.less,
+         '==' : np.equal,
+         '>=' : np.greater_equal,
+         '<=' : np.less_equal}
+
 FUNC1 = {'+' : positive,
          '-' : np.negative,
          'sin' : np.sin,
@@ -109,6 +122,13 @@ Returns
             right = stack.pop()
             left = stack.pop()
             result = FUNC2[token](left, right)
+            print(result.dtype, file=sys.stderr)
+            stack.append(result)
+        elif token == '?':
+            logic = stack.pop()
+            false = stack.pop()
+            true = stack.pop()
+            result = ifelse(logic, true, false)
             stack.append(result)
         else:
             try:    # test if numerical value
@@ -170,6 +190,12 @@ def imcreate(command, naxes):
             right = stack.pop()
             left = stack.pop()
             result = FUNC2[token](left, right)
+            stack.append(result)
+        elif token == '?':
+            logic = stack.pop()
+            false = stack.pop()
+            true = stack.pop()
+            result = ifelse(logic, true, false)
             stack.append(result)
         else:
             try:    # test if numerical value
