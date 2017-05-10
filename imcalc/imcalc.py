@@ -65,14 +65,29 @@ Returns
 
     stack = list()
 
+    # Get size of image
+    naxes = []
+    naxes.append(fits.getval(filenames[0], 'NAXIS2'))
+    naxes.append(fits.getval(filenames[0], 'NAXIS1'))
+
+    if 'x' in tokenlist:
+        xarr = np.mgrid[0:naxes[0], 0:naxes[1]][1] + 1.
+
+    if 'y' in tokenlist:
+        yarr = np.mgrid[0:naxes[0], 0:naxes[1]][0] + 1.
+
     for token in tokenlist:
-        if token[0] == '%':
+        if token[0] == '%':     # FITS image
             index = int(token[1:]) - 1
 
             if token not in images.keys():
                 images[token] = fits.getdata(filenames[index])
 
             stack.append(images[token])
+        elif token == 'x':     # X array
+            stack.append(xarr)
+        elif token == 'y':     # Y array
+            stack.append(yarr)
         elif token in ['+', '-']:   # can be unary or binary
             right = stack.pop()
             try:
