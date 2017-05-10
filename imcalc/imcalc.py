@@ -38,6 +38,8 @@ FUNC1 = {'+' : positive,
          'acos' : np.arccos,
          'atan' : np.arctan}
 
+FUNC0 = {'rand' : np.random.rand,
+         'randn' : np.random.randn}
 
 
 def imcalc(command, filenames):
@@ -96,6 +98,9 @@ Returns
             except IndexError:
                 result = FUNC1[token](right)
             stack.append(result)
+        elif token in FUNC0.keys():  # functions not operating on an image
+            result = FUNC0[token](naxes[1], naxes[0])
+            stack.append(result)
         elif token in FUNC1.keys():  # unary operators
             right = stack.pop()
             result = FUNC1[token](right)
@@ -153,6 +158,9 @@ def imcreate(command, naxes):
                 result = FUNC2[token](left, right)
             except IndexError:
                 result = FUNC1[token](right)
+            stack.append(result)
+        elif token in FUNC0.keys():  # functions not operating on an image
+            result = FUNC0[token](naxes[1], naxes[0])
             stack.append(result)
         elif token in FUNC1.keys():  # unary operators
             right = stack.pop()
