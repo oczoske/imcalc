@@ -49,7 +49,7 @@ def setup_package():
           author="Oliver Czoske",
           author_email="oliver.czoske@univie.ac.at",
           package_dir={'imcalc': 'imcalc'},
-          packages=['imcalc', 'imcalc.tests']
+          packages=['imcalc']
           # for some reason include_package_data can be temperamental
           #include_package_data=True,
           #package_data = {'simcado': ['data/*']},
