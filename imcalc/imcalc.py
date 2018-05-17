@@ -1,7 +1,6 @@
 '''imcalc - image calculator in rpn'''
 
 import sys
-#from optparse import OptionParser  # optparse is deprecated - what's new?
 import argparse
 
 import numpy as np
@@ -267,6 +266,12 @@ def main(* argv):
     # -p : bitpix for output file
     parser.add_argument('-p', dest='bitpix', type=convertvalues)
 
+
+    # -o : output file name
+    parser.add_argument('-o', dest='outfile', type=str,
+                        help='output file name. Careful: existing file will '
+                        'be overwritten')
+
     # commandstr : command string
     parser.add_argument('commandstr', metavar='command', type=str,
                         help='command string')
@@ -283,7 +288,12 @@ def main(* argv):
     else:
         outhdu = imcreate(args.commandstr, args.naxes, args.bitpix)
 
-    outhdu.writeto(sys.stdout)
+
+    if args.outfile is not None:
+        outhdu.writeto(args.outfile, overwrite=True)
+    else:
+        # this doesn't work (any more?), needs a binary stream
+        outhdu.writeto(sys.stdout)
 
 
 if __name__ == "__main__":
