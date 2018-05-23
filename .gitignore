@@ -12,6 +12,7 @@ eggs/
 *.egg-info/
 *.egg
 MANIFEST
+imcalc/version.py
 
 # emacs backup files
 *~
