@@ -12,3 +12,6 @@ eggs/
 *.egg-info/
 *.egg
 MANIFEST
+
+# emacs backup files
+*~
